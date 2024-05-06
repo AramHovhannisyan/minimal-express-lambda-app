@@ -1,22 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import { getData } from '../services/testService';
 import problem from '../lib/errorHandling/problem';
+import CreateLambdaEventDTO from '../lib/dtos/CreateLambdaEventDTO';
+import { handler } from '../handlers/getTest';
 
 // Controller handler Request and Response
 const getTest = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await getData();
-    if (!data.length) {
-      return res.status(404).json({
-        status: "Fail",
-        message: "Not found",
-      });
-    }
+    const eventDTO = new CreateLambdaEventDTO(req);
 
-    return res.status(200).json({
-      status: 'success',
-      data,
-    });
+    const { statusCode, body } = await handler(eventDTO);
+
+    const bodyObj = JSON.parse(body);
+
+    return res.status(statusCode).json(bodyObj);
   } catch (error) {
     console.error("error:", error);
 
